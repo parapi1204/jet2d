@@ -1,0 +1,136 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2112                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+scale   1;
+
+D	0.001;  // [m] jet diameter
+
+x0	0.0;
+x1	$x0;
+x2	#calc "1000.0*$D";
+x3	$x2;
+x4	$x2;
+x5	$x2;
+x6	$x0;
+x7	$x0;
+
+y0	#calc "0.5*$D";
+y1	#calc "500*$D";
+y2	$y1;
+y3	$y0;
+y4	#calc "-1.0*$y0";
+y5	#calc "-1.0*$y2";
+y6	$y5;
+y7	$y4;
+
+zb	0.0;
+zt	0.005;
+
+nx1 600;
+ny1 10;
+ny2 200;
+
+gx1 50.0;  // nx2領域のsimpleGrading
+gy2 50.0;
+rgy2 #calc "1/$gy2";
+
+vertices
+(
+    ( $x0 $y0 $zb)  //0
+    ( $x1 $y1 $zb)  //1
+    ( $x2 $y2 $zb)  //2
+    ( $x3 $y3 $zb)  //3
+    ( $x4 $y4 $zb)  //4
+    ( $x5 $y5 $zb)  //5
+    ( $x6 $y6 $zb)  //6
+    ( $x7 $y7 $zb)  //7
+    ( $x0 $y0 $zt)  //8
+    ( $x1 $y1 $zt)  //9
+    ( $x2 $y2 $zt)  //10
+    ( $x3 $y3 $zt)  //11
+    ( $x4 $y4 $zt)  //12
+    ( $x5 $y5 $zt)  //13
+    ( $x6 $y6 $zt)  //14
+    ( $x7 $y7 $zt)  //15
+);
+
+blocks  // 反時計回り 最初の2つ(98, 85, 14, 76)の数値の並びをx軸正方向と合わせる
+(
+    hex (0 3 2 1 8 11 10 9)   ($nx1 $ny2 1) simpleGrading ($gx1 $gy2  1)
+    hex (7 4 3 0 15 12 11 8)  ($nx1 $ny1 1) simpleGrading ($gx1 1     1)
+    hex (6 5 4 7 14 13 12 15) ($nx1 $ny2 1) simpleGrading ($gx1 $rgy2 1)
+);
+
+edges
+(
+);
+
+boundary  // 内から見て時計回り
+(
+    inlet
+    {
+        type patch;
+        faces
+        (
+            (0 7 15 8)
+        );
+    }
+    outlet
+    {
+        type patch;
+        faces
+        (
+            (3 2 10 11)
+			(4 3 11 12)
+			(5 4 12 13)
+        );
+    }
+
+	farBoundary
+	{
+		type patch;
+		faces
+		(
+			(2 1 9 10)
+			(6 5 13 14)
+		);
+	}
+	wall
+	{
+		type wall;
+		faces
+		(
+			(1 0 8 9)
+			(7 6 14 15)
+		);
+	}
+    frontAndBack
+    {
+        type empty;
+        faces
+        (
+            (3 0 1 2)
+			(4 7 0 3)
+			(5 6 7 4)
+			(8 11 10 9)
+			(15 12 11 8)
+			(14 13 12 15)
+        );
+    }
+);
+
+
+// ************************************************************************* //
